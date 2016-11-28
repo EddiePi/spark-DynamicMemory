@@ -1,0 +1,24 @@
+Spark Command: /usr/lib/jvm/jdk1.8.0_111/bin/java -cp /home/eddie/frameworks/spark-2.0.1-compile/conf/:/home/eddie/frameworks/spark-2.0.1-compile/assembly/target/scala-2.11/jars/* -Xmx1g org.apache.spark.deploy.master.Master --host disco-ubuntu --port 7077 --webui-port 8080
+========================================
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+16/11/03 16:22:55 INFO Master: Started daemon with process name: 4569@disco-ubuntu
+16/11/03 16:22:56 INFO SignalUtils: Registered signal handler for TERM
+16/11/03 16:22:56 INFO SignalUtils: Registered signal handler for HUP
+16/11/03 16:22:56 INFO SignalUtils: Registered signal handler for INT
+16/11/03 16:22:58 WARN Utils: Your hostname, disco-ubuntu resolves to a loopback address: 127.0.1.1; using 128.198.181.131 instead (on interface enp0s25)
+16/11/03 16:22:58 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+16/11/03 16:23:05 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+16/11/03 16:23:06 INFO SecurityManager: Changing view acls to: eddie
+16/11/03 16:23:06 INFO SecurityManager: Changing modify acls to: eddie
+16/11/03 16:23:06 INFO SecurityManager: Changing view acls groups to: 
+16/11/03 16:23:06 INFO SecurityManager: Changing modify acls groups to: 
+16/11/03 16:23:06 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(eddie); groups with view permissions: Set(); users  with modify permissions: Set(eddie); groups with modify permissions: Set()
+16/11/03 16:23:10 INFO Utils: Successfully started service 'sparkMaster' on port 7077.
+16/11/03 16:23:10 INFO Master: Starting Spark master at spark://disco-ubuntu:7077
+16/11/03 16:23:11 INFO Master: Running Spark version 2.0.1
+16/11/03 16:23:13 INFO Utils: Successfully started service 'MasterUI' on port 8080.
+16/11/03 16:23:13 INFO MasterWebUI: Bound MasterWebUI to 0.0.0.0, and started at http://128.198.181.131:8080
+16/11/03 16:23:13 INFO Utils: Successfully started service on port 6066.
+16/11/03 16:23:13 INFO StandaloneRestServer: Started REST server for submitting applications on port 6066
+16/11/03 16:23:14 INFO Master: I have been elected leader! New state: ALIVE
+16/11/03 16:24:02 ERROR Master: RECEIVED SIGNAL TERM
