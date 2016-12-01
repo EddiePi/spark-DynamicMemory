@@ -229,7 +229,7 @@ private[spark] class UnifiedMemoryManager private[memory] (
 
     override def run(): Unit = {
       logInfo("Update Memory Thread is Running")
-      while (!stopFlag) {
+      while (!this.isInterrupted) {
         try {
           updateMemory()
           Thread.sleep(updateInterval)
@@ -237,7 +237,7 @@ private[spark] class UnifiedMemoryManager private[memory] (
           case e: InterruptedException => logInfo("updateMemoryThread is interrupted.")
         }
       }
-      isStopped = true
+//      isStopped = true
     }
 
     def readMemoryFile(): Long = {
@@ -309,11 +309,13 @@ private[spark] class UnifiedMemoryManager private[memory] (
   // Called in SparkEnv
   override def stopUpdateMemoryThread(): Unit = {
     logInfo("Stopping Update Memory Thread")
-    updateMemoryThread.setStop()
+//    updateMemoryThread.setStop()
     updateMemoryThread.interrupt()
-    while(!updateMemoryThread.getIsStopped) {
-      Thread.sleep(conf.getLong("spark.memory.dynamicResize.interval", 10000))
-    }
+
+//    while(!updateMemoryThread.getIsStopped) {
+//      // Thread.sleep(conf.getLong("spark.memory.dynamicResize.interval", 10000))
+//      Thread.sleep(1000)
+//    }
     logInfo("Update Memory Thread is Stopped")
   }
 
