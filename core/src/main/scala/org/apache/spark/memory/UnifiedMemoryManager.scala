@@ -217,19 +217,19 @@ private[spark] class UnifiedMemoryManager private[memory] (
       conf.getLong("spark.memory.dynamicResize.interval", 10000)
     private val memoryFilePath: String =
       conf.get("spark.memory.dynamicResize.path", "/sys/fs/cgroup/memory/memory.limit_in_bytes")
-    private var isStopped: Boolean = false
+//    private var isStopped: Boolean = false
     private var stopFlag: Boolean = false
     def setStop(): Unit = {
       stopFlag = true
     }
 
-    def getIsStopped: Boolean = {
-      isStopped
-    }
+//    def getIsStopped: Boolean = {
+//      isStopped
+//    }
 
     override def run(): Unit = {
       logInfo("Update Memory Thread is Running")
-      while (!this.isInterrupted) {
+      while (!this.stopFlag) {
         try {
           updateMemory()
           Thread.sleep(updateInterval)
@@ -238,6 +238,7 @@ private[spark] class UnifiedMemoryManager private[memory] (
         }
       }
 //      isStopped = true
+      logInfo("Update Memory Thread is Stopped")
     }
 
     def readMemoryFile(): Long = {
@@ -309,14 +310,14 @@ private[spark] class UnifiedMemoryManager private[memory] (
   // Called in SparkEnv
   override def stopUpdateMemoryThread(): Unit = {
     logInfo("Stopping Update Memory Thread")
-//    updateMemoryThread.setStop()
-    updateMemoryThread.interrupt()
+    updateMemoryThread.setStop()
+    Thread.sleep(conf.getLong("spark.memory.dynamicResize.interval", 10000) + 1)
+//    updateMemoryThread.interrupt()
 
 //    while(!updateMemoryThread.getIsStopped) {
 //      // Thread.sleep(conf.getLong("spark.memory.dynamicResize.interval", 10000))
 //      Thread.sleep(1000)
 //    }
-    logInfo("Update Memory Thread is Stopped")
   }
 
 }
