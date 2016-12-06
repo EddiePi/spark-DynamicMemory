@@ -86,6 +86,7 @@ class SparkEnv (
       broadcastManager.stop()
       // Edit by Eddie
       memoryManager.stopUpdateMemoryThread()
+      memoryManager.stopReportMemoryThread()
 
       blockManager.stop()
       blockManager.master.stop()

@@ -71,6 +71,62 @@ private[spark] abstract class MemoryManager(
   " off-heap storage memory is: " + offHeapStorageMemoryPool.poolSize.toString() +
   " off-heap execution memory is: " + offHeapExecutionMemoryPool.poolSize.toString())
 
+  val reportMemoryThread = new ReportMemoryThread
+  if (conf.getBoolean("spark.memory.report.enabled", false)) {
+    reportMemoryThread.start()
+  }
+
+  protected[this] class ReportMemoryThread()
+    extends Thread {
+
+    private val reportInterval: Long =
+      conf.getLong("spark.memory.report.interval", 60000)
+    //    private var isStopped: Boolean = false
+    private var stopFlag: Boolean = false
+    def setStop(): Unit = {
+      stopFlag = true
+    }
+
+    override def run(): Unit = {
+      logInfo("Update Memory Thread is Running")
+      while (!this.stopFlag) {
+        try {
+          reportMemoryUsage()
+          Thread.sleep(reportInterval)
+        } catch {
+          case e: InterruptedException => logInfo("reportThread is interrupted.")
+        }
+      }
+      //      isStopped = true
+      logInfo("Update Memory Thread is Stopped")
+    }
+
+    def reportMemoryUsage(): Unit = {
+      logInfo("on-heap storage pool size: " +
+        onHeapStorageMemoryPool.poolSize / (1024 * 1024 * 1024) + "g" +
+        " on-heap storage pool used: " +
+        onHeapStorageMemoryPool.memoryUsed / (1024 * 1024 * 1024) + "g" +
+        " on-heap execution pool size: + " +
+        onHeapExecutionMemoryPool.poolSize / (1024 * 1024 * 1024) + "g" +
+        " on-heap execution pool used: " +
+        onHeapExecutionMemoryPool.memoryUsed / (1024 * 1024 * 1024) + "g" +
+        " off-heap storage pool size: " +
+        offHeapStorageMemoryPool.poolSize / (1024 * 1024 * 1024) + "g" +
+        " off-heap storage pool used: " +
+        offHeapStorageMemoryPool.memoryUsed / (1024 * 1024 * 1024) + "g" +
+        " off-heap execution pool size: + " +
+        offHeapExecutionMemoryPool.poolSize / (1024 * 1024 * 1024) + "g" +
+        " off-heap execution pool used: " +
+        offHeapExecutionMemoryPool.memoryUsed / (1024 * 1024 * 1024) + "g")
+    }
+  }
+
+  def stopReportMemoryThread(): Unit = {
+    reportMemoryThread.setStop()
+    reportMemoryThread.interrupt()
+    Thread.sleep(2000)
+  }
+
   /**
    * Total available memory for storage, in bytes. This amount can vary over time, depending on
    * the MemoryManager implementation.
@@ -236,8 +292,10 @@ private[spark] abstract class MemoryManager(
    */
   private[memory] final val tungstenMemoryAllocator: MemoryAllocator = {
     tungstenMemoryMode match {
-      case MemoryMode.ON_HEAP => MemoryAllocator.HEAP
-      case MemoryMode.OFF_HEAP => MemoryAllocator.UNSAFE
+      case MemoryMode.ON_HEAP => logInfo("using on-heap memory allocator");
+        MemoryAllocator.HEAP
+      case MemoryMode.OFF_HEAP => logInfo("using off-heap memory allocator");
+        MemoryAllocator.UNSAFE
     }
   }
 

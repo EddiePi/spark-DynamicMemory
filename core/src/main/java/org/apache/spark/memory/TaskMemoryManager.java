@@ -19,6 +19,7 @@ package org.apache.spark.memory;
 
 import javax.annotation.concurrent.GuardedBy;
 import java.io.IOException;
+import java.nio.file.ClosedDirectoryStreamException;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
@@ -259,7 +260,15 @@ public class TaskMemoryManager {
     }
     MemoryBlock page = null;
     try {
+      // Edit by Eddie
+      logger.info("allocating a page");
+
       page = memoryManager.tungstenMemoryAllocator().allocate(acquired);
+
+      // Edit by Eddie
+      logger.info("allocated" + memoryManager.tungstenMemoryMode().toString() +
+      " page size is: " + page.size());
+
     } catch (OutOfMemoryError e) {
       logger.warn("Failed to allocate a page ({} bytes), try again.", acquired);
       // there is no enough memory actually, it means the actual free memory is smaller than
