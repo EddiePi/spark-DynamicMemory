@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="17da6e45-512f-4642-ab39-658fea7f2cea" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/src/main/java/org/apache/spark/memory/TaskMemoryManager.java" afterPath="$PROJECT_DIR$/core/src/main/java/org/apache/spark/memory/TaskMemoryManager.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/SparkEnv.scala" afterPath="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/SparkEnv.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/MemoryManager.scala" afterPath="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/MemoryManager.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/StorageMemoryPool.scala" afterPath="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/StorageMemoryPool.scala" />
     </list>
     <ignored path="spark-parent_2.11.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -58,8 +55,8 @@
       <file leaf-file-name="MemoryManager.scala" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/MemoryManager.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="286">
-              <caret line="94" column="25" selection-start-line="94" selection-start-column="25" selection-end-line="94" selection-end-column="25" />
+            <state relative-caret-position="551">
+              <caret line="119" column="68" selection-start-line="119" selection-start-column="68" selection-end-line="119" selection-end-column="68" />
               <folding />
             </state>
           </provider>
@@ -68,8 +65,18 @@
       <file leaf-file-name="UnifiedMemoryManager.scala" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/UnifiedMemoryManager.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="339">
-              <caret line="313" column="80" selection-start-line="313" selection-start-column="4" selection-end-line="313" selection-end-column="80" />
+            <state relative-caret-position="574">
+              <caret line="198" column="21" selection-start-line="198" selection-start-column="21" selection-end-line="198" selection-end-column="21" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="StorageMemoryPool.scala" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/StorageMemoryPool.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="342">
+              <caret line="77" column="16" selection-start-line="77" selection-start-column="16" selection-end-line="77" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -137,12 +144,12 @@
         <option value="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/StaticMemoryManager.scala" />
         <option value="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/executor/CoarseGrainedExecutorBackend.scala" />
         <option value="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/executor/Executor.scala" />
-        <option value="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/StorageMemoryPool.scala" />
         <option value="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/UnifiedMemoryManager.scala" />
         <option value="$PROJECT_DIR$/common/unsafe/src/main/java/org/apache/spark/unsafe/memory/UnsafeMemoryAllocator.java" />
         <option value="/usr/lib/jvm/jdk1.8.0_111/jre/lib/rt.jar!/sun/misc/Unsafe.class" />
         <option value="$PROJECT_DIR$/core/src/main/java/org/apache/spark/memory/TaskMemoryManager.java" />
         <option value="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/SparkEnv.scala" />
+        <option value="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/StorageMemoryPool.scala" />
         <option value="$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/MemoryManager.scala" />
       </list>
     </option>
@@ -1095,13 +1102,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/StorageMemoryPool.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="415">
-          <caret line="104" column="12" selection-start-line="104" selection-start-column="12" selection-end-line="104" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/core/src/main/scala/org/apache/spark/executor/CoarseGrainedExecutorBackend.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-2262">
@@ -1113,6 +1113,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="221">
           <caret line="41" column="22" selection-start-line="41" selection-start-column="22" selection-end-line="41" selection-end-column="22" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1321,16 +1322,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/UnifiedMemoryManager.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="339">
-          <caret line="313" column="80" selection-start-line="313" selection-start-column="4" selection-end-line="313" selection-end-column="80" />
+        <state relative-caret-position="574">
+          <caret line="198" column="21" selection-start-line="198" selection-start-column="21" selection-end-line="198" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/StorageMemoryPool.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="342">
+          <caret line="77" column="16" selection-start-line="77" selection-start-column="16" selection-end-line="77" selection-end-column="16" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/src/main/scala/org/apache/spark/memory/MemoryManager.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="286">
-          <caret line="94" column="25" selection-start-line="94" selection-start-column="25" selection-end-line="94" selection-end-column="25" />
+        <state relative-caret-position="551">
+          <caret line="119" column="68" selection-start-line="119" selection-start-column="68" selection-end-line="119" selection-end-column="68" />
           <folding />
         </state>
       </provider>

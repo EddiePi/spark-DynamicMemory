@@ -103,21 +103,21 @@ private[spark] abstract class MemoryManager(
 
     def reportMemoryUsage(): Unit = {
       logInfo("on-heap storage pool size: " +
-        onHeapStorageMemoryPool.poolSize / (1024 * 1024 * 1024) + "g" +
+        onHeapStorageMemoryPool.poolSize / (1024.0 * 1024) + "m" +
         " on-heap storage pool used: " +
-        onHeapStorageMemoryPool.memoryUsed / (1024 * 1024 * 1024) + "g" +
+        onHeapStorageMemoryPool.memoryUsed / (1024.0 * 1024) + "m" +
         " on-heap execution pool size: + " +
-        onHeapExecutionMemoryPool.poolSize / (1024 * 1024 * 1024) + "g" +
+        onHeapExecutionMemoryPool.poolSize / (1024.0 * 1024) + "m" +
         " on-heap execution pool used: " +
-        onHeapExecutionMemoryPool.memoryUsed / (1024 * 1024 * 1024) + "g" +
+        onHeapExecutionMemoryPool.memoryUsed / (1024.0 * 1024) + "m" +
         " off-heap storage pool size: " +
-        offHeapStorageMemoryPool.poolSize / (1024 * 1024 * 1024) + "g" +
+        offHeapStorageMemoryPool.poolSize / (1024.0 * 1024) + "m" +
         " off-heap storage pool used: " +
-        offHeapStorageMemoryPool.memoryUsed / (1024 * 1024 * 1024) + "g" +
-        " off-heap execution pool size: + " +
-        offHeapExecutionMemoryPool.poolSize / (1024 * 1024 * 1024) + "g" +
+        offHeapStorageMemoryPool.memoryUsed / (1024.0 * 1024) + "m" +
+        " off-heap execution pool size: " +
+        offHeapExecutionMemoryPool.poolSize / (1024.0 * 1024) + "m" +
         " off-heap execution pool used: " +
-        offHeapExecutionMemoryPool.memoryUsed / (1024 * 1024 * 1024) + "g")
+        offHeapExecutionMemoryPool.memoryUsed / (1024.0 * 1024) + "m")
     }
   }
 
