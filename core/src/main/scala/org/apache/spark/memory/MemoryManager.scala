@@ -106,7 +106,7 @@ private[spark] abstract class MemoryManager(
         onHeapStorageMemoryPool.poolSize / (1024.0 * 1024) + "m" +
         " on-heap storage pool used: " +
         onHeapStorageMemoryPool.memoryUsed / (1024.0 * 1024) + "m" +
-        " on-heap execution pool size: + " +
+        " on-heap execution pool size: " +
         onHeapExecutionMemoryPool.poolSize / (1024.0 * 1024) + "m" +
         " on-heap execution pool used: " +
         onHeapExecutionMemoryPool.memoryUsed / (1024.0 * 1024) + "m" +
