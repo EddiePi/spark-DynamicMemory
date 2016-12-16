@@ -104,9 +104,6 @@ private[memory] class ExecutionMemoryPool(
       // This will later cause waiting tasks to wake up and check numTasks again
       lock.notifyAll()
     }
-    logInfo("acquiring execution memory. " +
-    "current used pool size: " + memoryUsed +
-    "acquiring " + numBytes + " bytes")
 
     // Keep looping until we're either sure that we don't want to grant this request (because this
     // task would have more than 1 / numActiveTasks of the memory) or we have enough free
@@ -153,9 +150,7 @@ private[memory] class ExecutionMemoryPool(
    * Release `numBytes` of memory acquired by the given task.
    */
   def releaseMemory(numBytes: Long, taskAttemptId: Long): Unit = lock.synchronized {
-    logInfo("releasing execution memory. " +
-      "current used pool size: " + memoryUsed +
-      "releasing " + numBytes + " bytes")
+
     val curMem = memoryForTask.getOrElse(taskAttemptId, 0L)
     var memoryToFree = if (curMem < numBytes) {
       logWarning(
