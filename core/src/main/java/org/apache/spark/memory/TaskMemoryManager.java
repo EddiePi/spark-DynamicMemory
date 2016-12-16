@@ -183,7 +183,8 @@ public class TaskMemoryManager {
       }
 
       consumers.add(consumer);
-      logger.debug("Task {} acquired {} for {}", taskAttemptId, Utils.bytesToString(got), consumer);
+      logger.debug("Task {} acquired {} for {}. mode: {}",
+              taskAttemptId, Utils.bytesToString(got), consumer, mode.toString());
       return got;
     }
   }
