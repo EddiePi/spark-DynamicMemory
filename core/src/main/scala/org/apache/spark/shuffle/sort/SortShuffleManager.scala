@@ -124,11 +124,13 @@ private[spark] class SortShuffleManager(conf: SparkConf) extends ShuffleManager 
       handle: ShuffleHandle,
       mapId: Int,
       context: TaskContext): ShuffleWriter[K, V] = {
+    logDebug("getting shuffle writer")
     numMapsForShuffle.putIfAbsent(
       handle.shuffleId, handle.asInstanceOf[BaseShuffleHandle[_, _, _]].numMaps)
     val env = SparkEnv.get
     handle match {
       case unsafeShuffleHandle: SerializedShuffleHandle[K @unchecked, V @unchecked] =>
+        logDebug("get unsafeShuffleHandle")
         new UnsafeShuffleWriter(
           env.blockManager,
           shuffleBlockResolver.asInstanceOf[IndexShuffleBlockResolver],
@@ -138,6 +140,7 @@ private[spark] class SortShuffleManager(conf: SparkConf) extends ShuffleManager 
           context,
           env.conf)
       case bypassMergeSortHandle: BypassMergeSortShuffleHandle[K @unchecked, V @unchecked] =>
+        logDebug("get bypassMergeSortHandle")
         new BypassMergeSortShuffleWriter(
           env.blockManager,
           shuffleBlockResolver.asInstanceOf[IndexShuffleBlockResolver],
@@ -146,6 +149,7 @@ private[spark] class SortShuffleManager(conf: SparkConf) extends ShuffleManager 
           context,
           env.conf)
       case other: BaseShuffleHandle[K @unchecked, V @unchecked, _] =>
+        logDebug("get SortShuffleWriter")
         new SortShuffleWriter(shuffleBlockResolver, other, mapId, context)
     }
   }
