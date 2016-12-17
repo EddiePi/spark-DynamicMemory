@@ -110,6 +110,11 @@ public class UnsafeShuffleWriter<K, V> extends ShuffleWriter<K, V> {
         SortShuffleManager.MAX_SHUFFLE_OUTPUT_PARTITIONS_FOR_SERIALIZED_MODE() +
         " reduce partitions");
     }
+
+    // Edit by Eddie
+    logger.info("initializing UnsafeShuffleWriter. (can use off-heap execution memory" +
+    "memory mode: " + memoryManager.getTungstenMemoryMode().toString());
+
     this.blockManager = blockManager;
     this.shuffleBlockResolver = shuffleBlockResolver;
     this.memoryManager = memoryManager;
