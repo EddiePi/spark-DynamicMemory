@@ -812,7 +812,8 @@ private[spark] class BlockManager(
         }
         addUpdatedBlockStatusToTaskMetrics(blockId, putBlockStatus)
       }
-      logDebug("Put block %s locally took %s".format(blockId, Utils.getUsedTimeMs(startTimeMs)))
+      logDebug("Using 'doPutBytes()'" +
+        "Put block %s locally took %s".format(blockId, Utils.getUsedTimeMs(startTimeMs)))
       if (level.replication > 1) {
         // Wait for asynchronous replication to finish
         try {
@@ -981,7 +982,8 @@ private[spark] class BlockManager(
           reportBlockStatus(blockId, putBlockStatus)
         }
         addUpdatedBlockStatusToTaskMetrics(blockId, putBlockStatus)
-        logDebug("Put block %s locally took %s".format(blockId, Utils.getUsedTimeMs(startTimeMs)))
+        logDebug("Using 'doPutIterator()'" +
+          "Put block %s locally took %s".format(blockId, Utils.getUsedTimeMs(startTimeMs)))
         if (level.replication > 1) {
           val remoteStartTime = System.currentTimeMillis
           val bytesToReplicate = doGetLocalBytes(blockId, info)
