@@ -26,7 +26,6 @@ import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util.Random
 import scala.util.control.NonFatal
-
 import org.apache.spark._
 import org.apache.spark.executor.{DataReadMethod, ShuffleWriteMetrics}
 import org.apache.spark.internal.Logging
@@ -43,6 +42,8 @@ import org.apache.spark.storage.memory._
 import org.apache.spark.unsafe.Platform
 import org.apache.spark.util._
 import org.apache.spark.util.io.ChunkedByteBuffer
+
+import scala.collection.mutable
 
 /* Class for returning a fetched block and associated metrics. */
 private[spark] class BlockResult(
@@ -145,6 +146,19 @@ private[spark] class BlockManager(
   @volatile private var cachedPeers: Seq[BlockManagerId] = _
   private val peerFetchLock = new Object
   private var lastPeerFetchTime = 0L
+
+
+  // Edit by Eddie
+  // Keep track of the original StorageLevel and the new StorageLevel for a block
+  private[storage] class OldNewStorageLevel (
+    val oldStorageLevel: StorageLevel,
+    val newStorageLevel: StorageLevel) {
+
+  }
+  private val storageLevelMap = new mutable.HashMap[BlockId, OldNewStorageLevel]()
+
+  private val autoOffHeap: Boolean = conf.getBoolean("spark.memory.offHeap.forceOffHeap", false)
+
 
   /**
    * Initializes the BlockManager with the given appId. This is not performed in the constructor as
@@ -693,13 +707,21 @@ private[spark] class BlockManager(
   /**
    * @return true if the block was stored or false if an error occurred.
    */
+  // Edit by Eddie
+  // add Auto use off-heap
   def putIterator[T: ClassTag](
       blockId: BlockId,
       values: Iterator[T],
       level: StorageLevel,
       tellMaster: Boolean = true): Boolean = {
     require(values != null, "Values is null")
-    doPutIterator(blockId, () => values, level, implicitly[ClassTag[T]], tellMaster) match {
+    val actualLevel = if (autoOffHeap) {
+      storageLevelMap.put(blockId, new OldNewStorageLevel(level, StorageLevel.OFF_HEAP))
+      StorageLevel.OFF_HEAP
+    } else {
+      level
+    }
+    doPutIterator(blockId, () => values, actualLevel, implicitly[ClassTag[T]], tellMaster) match {
       case None =>
         true
       case Some(iter) =>
@@ -733,13 +755,21 @@ private[spark] class BlockManager(
    *
    * @return true if the block was stored or false if an error occurred.
    */
+  // Edit by Eddie
+  // add Auto use off-heap
   def putBytes[T: ClassTag](
       blockId: BlockId,
       bytes: ChunkedByteBuffer,
       level: StorageLevel,
       tellMaster: Boolean = true): Boolean = {
     require(bytes != null, "Bytes is null")
-    doPutBytes(blockId, bytes, level, implicitly[ClassTag[T]], tellMaster)
+    val actualLevel = if (autoOffHeap) {
+      storageLevelMap.put(blockId, new OldNewStorageLevel(level, StorageLevel.OFF_HEAP))
+      StorageLevel.OFF_HEAP
+    } else {
+      level
+    }
+    doPutBytes(blockId, bytes, actualLevel, implicitly[ClassTag[T]], tellMaster)
   }
 
   /**
