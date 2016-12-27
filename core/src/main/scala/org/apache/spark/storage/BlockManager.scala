@@ -707,21 +707,13 @@ private[spark] class BlockManager(
   /**
    * @return true if the block was stored or false if an error occurred.
    */
-  // Edit by Eddie
-  // add Auto use off-heap
   def putIterator[T: ClassTag](
       blockId: BlockId,
       values: Iterator[T],
       level: StorageLevel,
       tellMaster: Boolean = true): Boolean = {
     require(values != null, "Values is null")
-    val actualLevel = if (autoOffHeap) {
-      storageLevelMap.put(blockId, new OldNewStorageLevel(level, StorageLevel.OFF_HEAP))
-      StorageLevel.OFF_HEAP
-    } else {
-      level
-    }
-    doPutIterator(blockId, () => values, actualLevel, implicitly[ClassTag[T]], tellMaster) match {
+    doPutIterator(blockId, () => values, level, implicitly[ClassTag[T]], tellMaster) match {
       case None =>
         true
       case Some(iter) =>
@@ -755,21 +747,13 @@ private[spark] class BlockManager(
    *
    * @return true if the block was stored or false if an error occurred.
    */
-  // Edit by Eddie
-  // add Auto use off-heap
   def putBytes[T: ClassTag](
       blockId: BlockId,
       bytes: ChunkedByteBuffer,
       level: StorageLevel,
       tellMaster: Boolean = true): Boolean = {
     require(bytes != null, "Bytes is null")
-    val actualLevel = if (autoOffHeap) {
-      storageLevelMap.put(blockId, new OldNewStorageLevel(level, StorageLevel.OFF_HEAP))
-      StorageLevel.OFF_HEAP
-    } else {
-      level
-    }
-    doPutBytes(blockId, bytes, actualLevel, implicitly[ClassTag[T]], tellMaster)
+    doPutBytes(blockId, bytes, level, implicitly[ClassTag[T]], tellMaster)
   }
 
   /**
@@ -783,6 +767,8 @@ private[spark] class BlockManager(
    *                     returns.
    * @return true if the block was already present or if the put succeeded, false otherwise.
    */
+  // Edit by Eddie
+  // add auto off-heap
   private def doPutBytes[T](
       blockId: BlockId,
       bytes: ChunkedByteBuffer,
@@ -790,7 +776,14 @@ private[spark] class BlockManager(
       classTag: ClassTag[T],
       tellMaster: Boolean = true,
       keepReadLock: Boolean = false): Boolean = {
-    doPut(blockId, level, classTag, tellMaster = tellMaster, keepReadLock = keepReadLock) { info =>
+    val actualLevel = if (autoOffHeap) {
+      storageLevelMap.put(blockId, new OldNewStorageLevel(level, StorageLevel.OFF_HEAP))
+      StorageLevel.OFF_HEAP
+    } else {
+      level
+    }
+    doPut(blockId, actualLevel,
+      classTag, tellMaster = tellMaster, keepReadLock = keepReadLock) { info =>
       val startTimeMs = System.currentTimeMillis
       // Since we're storing bytes, initiate the replication before storing them locally.
       // This is faster as data is already serialized and ready to send.
@@ -947,6 +940,8 @@ private[spark] class BlockManager(
    * @return None if the block was already present or if the put succeeded, or Some(iterator)
    *         if the put failed.
    */
+  // Edit by Eddie
+  // add auto off-heap
   private def doPutIterator[T](
       blockId: BlockId,
       iterator: () => Iterator[T],
@@ -954,7 +949,14 @@ private[spark] class BlockManager(
       classTag: ClassTag[T],
       tellMaster: Boolean = true,
       keepReadLock: Boolean = false): Option[PartiallyUnrolledIterator[T]] = {
-    doPut(blockId, level, classTag, tellMaster = tellMaster, keepReadLock = keepReadLock) { info =>
+    val actualLevel = if (autoOffHeap) {
+      storageLevelMap.put(blockId, new OldNewStorageLevel(level, StorageLevel.OFF_HEAP))
+      StorageLevel.OFF_HEAP
+    } else {
+      level
+    }
+    doPut(blockId, actualLevel, classTag,
+      tellMaster = tellMaster, keepReadLock = keepReadLock) { info =>
       val startTimeMs = System.currentTimeMillis
       var iteratorFromFailedMemoryStorePut: Option[PartiallyUnrolledIterator[T]] = None
       // Size of the block in bytes
