@@ -782,6 +782,7 @@ private[spark] class BlockManager(
     } else {
       level
     }
+    // info is generated in 'doPut()' method. It contains the actual storage level.
     doPut(blockId, actualLevel,
       classTag, tellMaster = tellMaster, keepReadLock = keepReadLock) { info =>
       val startTimeMs = System.currentTimeMillis
@@ -942,6 +943,7 @@ private[spark] class BlockManager(
    */
   // Edit by Eddie
   // add auto off-heap
+  // rewrite multiple 'level' to 'actualLevel'
   private def doPutIterator[T](
       blockId: BlockId,
       iterator: () => Iterator[T],
@@ -961,16 +963,16 @@ private[spark] class BlockManager(
       var iteratorFromFailedMemoryStorePut: Option[PartiallyUnrolledIterator[T]] = None
       // Size of the block in bytes
       var size = 0L
-      if (level.useMemory) {
+      if (actualLevel.useMemory) {
         // Put it in memory first, even if it also has useDisk set to true;
         // We will drop it to disk later if the memory store can't hold it.
-        if (level.deserialized) {
+        if (actualLevel.deserialized) {
           memoryStore.putIteratorAsValues(blockId, iterator(), classTag) match {
             case Right(s) =>
               size = s
             case Left(iter) =>
               // Not enough space to unroll this block; drop to disk if applicable
-              if (level.useDisk) {
+              if (actualLevel.useDisk) {
                 logWarning(s"Persisting block $blockId to disk instead.")
                 diskStore.put(blockId) { fileOutputStream =>
                   serializerManager.dataSerializeStream(blockId, fileOutputStream, iter)(classTag)
@@ -986,7 +988,7 @@ private[spark] class BlockManager(
               size = s
             case Left(partiallySerializedValues) =>
               // Not enough space to unroll this block; drop to disk if applicable
-              if (level.useDisk) {
+              if (actualLevel.useDisk) {
                 logWarning(s"Persisting block $blockId to disk instead.")
                 diskStore.put(blockId) { fileOutputStream =>
                   partiallySerializedValues.finishWritingToStream(fileOutputStream)
@@ -998,7 +1000,7 @@ private[spark] class BlockManager(
           }
         }
 
-      } else if (level.useDisk) {
+      } else if (actualLevel.useDisk) {
         diskStore.put(blockId) { fileOutputStream =>
           serializerManager.dataSerializeStream(blockId, fileOutputStream, iterator())(classTag)
         }
@@ -1016,7 +1018,7 @@ private[spark] class BlockManager(
         addUpdatedBlockStatusToTaskMetrics(blockId, putBlockStatus)
         logDebug("Using 'doPutIterator()'" +
           "Put block %s locally took %s".format(blockId, Utils.getUsedTimeMs(startTimeMs)))
-        if (level.replication > 1) {
+        if (actualLevel.replication > 1) {
           val remoteStartTime = System.currentTimeMillis
           val bytesToReplicate = doGetLocalBytes(blockId, info)
           // [SPARK-16550] Erase the typed classTag when using default serialization, since
