@@ -395,7 +395,7 @@ private[spark] class MemoryStore(
       logInfo(("putIteratorAsBytes: " +
         "Block %s stored as bytes in memory (estimated size %s, free %s)").format(
         blockId, Utils.bytesToString(entry.size),
-        memoryMode match {
+        StorageLevel match {
           case StorageLevel.OFF_HEAP =>
             Utils.bytesToString(maxOffHeapMemory - offHeapBlockMemoryUsed)
           case _ => Utils.bytesToString(maxMemory - blocksMemoryUsed)
