@@ -87,6 +87,11 @@ private[spark] class UnifiedMemoryManager private[memory] (
     maxHeapMemory - onHeapExecutionMemoryPool.memoryUsed
   }
 
+  // Edit by Eddie
+  override def maxOffHeapStorageMemory: Long = synchronized {
+    maxOffHeapMemory - offHeapExecutionMemoryPool.memoryUsed
+  }
+
   /**
    * Try to acquire up to `numBytes` of execution memory for the current task and return the
    * number of bytes obtained, or 0 if none can be allocated.

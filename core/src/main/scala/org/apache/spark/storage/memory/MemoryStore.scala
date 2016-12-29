@@ -103,6 +103,8 @@ private[spark] class MemoryStore(
   /** Total amount of memory available for storage, in bytes. */
   private def maxMemory: Long = memoryManager.maxOnHeapStorageMemory
 
+  private def maxOffHeapMemory: Long = memoryManager.maxOffHeapStorageMemory
+
   if (maxMemory < unrollMemoryThreshold) {
     logWarning(s"Max memory ${Utils.bytesToString(maxMemory)} is less than the initial memory " +
       s"threshold ${Utils.bytesToString(unrollMemoryThreshold)} needed to store a block in " +
@@ -114,12 +116,20 @@ private[spark] class MemoryStore(
   /** Total storage memory used including unroll memory, in bytes. */
   private def memoryUsed: Long = memoryManager.storageMemoryUsed
 
+  // Edit by Eddie
+  private def offHeapMemoryUsed: Long = memoryManager.offHeapStorageMemoryUsed
+
   /**
    * Amount of storage memory, in bytes, used for caching blocks.
    * This does not include memory used for unrolling.
    */
   private def blocksMemoryUsed: Long = memoryManager.synchronized {
     memoryUsed - currentUnrollMemory
+  }
+
+  // Edit by Eddie
+  private def offHeapBlockMemoryUsed: Long = memoryManager.synchronized {
+    offHeapMemoryUsed - offHeapUnrollMemoryMap.values.sum
   }
 
   def getSize(blockId: BlockId): Long = {
@@ -385,7 +395,12 @@ private[spark] class MemoryStore(
       logInfo(("putIteratorAsBytes: " +
         "Block %s stored as bytes in memory (estimated size %s, free %s)").format(
         blockId, Utils.bytesToString(entry.size),
-        Utils.bytesToString(maxMemory - blocksMemoryUsed)))
+        memoryMode match {
+          case StorageLevel.OFF_HEAP =>
+            Utils.bytesToString(maxOffHeapMemory - offHeapBlockMemoryUsed)
+          case _ => Utils.bytesToString(maxMemory - blocksMemoryUsed)
+        }
+        ))
       Right(entry.size)
     } else {
       // We ran out of space while unrolling the values for this block
