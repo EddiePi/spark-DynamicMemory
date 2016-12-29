@@ -135,7 +135,9 @@ private[spark] abstract class MemoryManager(
   def maxOnHeapStorageMemory: Long
 
   // Edit by Eddie
-  def maxOffHeapStorageMemory: Long
+  def maxOffHeapStorageMemory: Long = synchronized {
+      maxOffHeapMemory - offHeapExecutionMemoryPool.memoryUsed
+    }
 
   /**
    * Set the [[MemoryStore]] used by this manager to evict cached blocks.
