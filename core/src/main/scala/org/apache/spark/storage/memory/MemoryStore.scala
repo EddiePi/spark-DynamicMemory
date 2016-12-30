@@ -160,8 +160,9 @@ private[spark] class MemoryStore(
       entries.synchronized {
         entries.put(blockId, entry)
       }
-      logInfo("putBytes: Block %s stored as bytes in memory (estimated size %s, free %s)".format(
-        blockId, Utils.bytesToString(size), Utils.bytesToString(maxMemory - blocksMemoryUsed)))
+      logInfo("putBytes: Block %s stored as bytes in %s memory (estimated size %s, free %s)".format(
+        blockId, memoryMode, Utils.bytesToString(size),
+        Utils.bytesToString(maxMemory - blocksMemoryUsed)))
       true
     } else {
       false
@@ -393,8 +394,8 @@ private[spark] class MemoryStore(
         entries.put(blockId, entry)
       }
       logInfo(("putIteratorAsBytes: " +
-        "Block %s stored as bytes in memory (estimated size %s, free %s)").format(
-        blockId, Utils.bytesToString(entry.size),
+        "Block %s stored as bytes in %s memory (estimated size %s, free %s)").format(
+        blockId, memoryMode, Utils.bytesToString(entry.size),
         StorageLevel match {
           case StorageLevel.OFF_HEAP =>
             Utils.bytesToString(maxOffHeapMemory - offHeapBlockMemoryUsed)

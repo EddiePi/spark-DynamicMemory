@@ -196,9 +196,6 @@ private[spark] class UnifiedMemoryManager private[memory] (
       executionPool.decrementPoolSize(memoryBorrowedFromExecution)
       storagePool.incrementPoolSize(memoryBorrowedFromExecution)
     }
-    // Edit by Eddie
-    logDebug(("acquire memory %s m from '%s' storage pool")
-      .format(numBytes / 1024 / 1024, memoryMode))
     storagePool.acquireMemory(blockId, numBytes)
   }
 
