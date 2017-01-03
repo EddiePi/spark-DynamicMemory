@@ -157,7 +157,9 @@ private[spark] class BlockManager(
   }
   private val storageLevelMap = new mutable.HashMap[BlockId, OldNewStorageLevel]()
 
-  private val autoOffHeap: Boolean = conf.getBoolean("spark.memory.offHeap.forceOffHeap", false)
+  private val autoOffHeap: Boolean = conf.getBoolean("spark.memory.offHeap.autoOffHeap", false)
+
+  logDebug("autoOffHeap is: " + autoOffHeap)
 
 
   /**
