@@ -985,7 +985,7 @@ private[spark] class BlockManager(
               }
           }
         } else { // !level.deserialized
-          memoryStore.putIteratorAsBytes(blockId, iterator(), classTag, level.memoryMode) match {
+          memoryStore.putIteratorAsBytes(blockId, iterator(), classTag, actualLevel.memoryMode) match {
             case Right(s) =>
               size = s
             case Left(partiallySerializedValues) =>
