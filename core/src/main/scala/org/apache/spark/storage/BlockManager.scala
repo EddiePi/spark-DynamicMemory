@@ -157,9 +157,22 @@ private[spark] class BlockManager(
   }
   private val storageLevelMap = new mutable.HashMap[BlockId, OldNewStorageLevel]()
 
-  private val autoOffHeap: Boolean = conf.getBoolean("spark.memory.offHeap.autoOffHeap", false)
+  private val autoOffHeap: Boolean =
+    conf.getBoolean("spark.memory.offHeap.autoOffHeap.enabled", false)
 
   logDebug("autoOffHeap is: " + autoOffHeap)
+
+  val memoryModeDecider: MemoryModeDecider = {
+    if (autoOffHeap) {
+      val deciderType: String = conf.get("spark.memory.offHeap.autoOffHeap.decider", "static")
+      deciderType match {
+        case "static" => new StaticMemoryModeDecider(conf)
+        case _ => new StaticMemoryModeDecider(conf)
+      }
+    } else {
+      null
+    }
+  }
 
 
   /**
@@ -954,8 +967,11 @@ private[spark] class BlockManager(
       tellMaster: Boolean = true,
       keepReadLock: Boolean = false): Option[PartiallyUnrolledIterator[T]] = {
     val actualLevel = if (autoOffHeap) {
-      storageLevelMap.put(blockId, new OldNewStorageLevel(level, StorageLevel.OFF_HEAP))
-      StorageLevel.OFF_HEAP
+      val newLevel = memoryModeDecider.levelToUse(level)
+      if (!newLevel.equals(level)) {
+        storageLevelMap.put(blockId, new OldNewStorageLevel(level, newLevel))
+      }
+      newLevel
     } else {
       level
     }
@@ -985,7 +1001,8 @@ private[spark] class BlockManager(
               }
           }
         } else { // !level.deserialized
-          memoryStore.putIteratorAsBytes(blockId, iterator(), classTag, actualLevel.memoryMode) match {
+          memoryStore.putIteratorAsBytes(blockId, iterator(), classTag,
+            actualLevel.memoryMode) match {
             case Right(s) =>
               size = s
             case Left(partiallySerializedValues) =>
