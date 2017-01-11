@@ -245,6 +245,9 @@ private[spark] abstract class MemoryManager(
   }
 
   // Edit by Eddie
+  final def onHeapStorageMemoryUsed: Long = synchronized {
+    onHeapStorageMemoryPool.memoryUsed
+  }
   final def offHeapStorageMemoryUsed: Long = synchronized {
     offHeapStorageMemoryPool.memoryUsed
   }
