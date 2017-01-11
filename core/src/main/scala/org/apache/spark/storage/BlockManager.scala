@@ -168,6 +168,7 @@ private[spark] class BlockManager(
       deciderType match {
         case "static" => new StaticMemoryModeDecider(conf)
         case "offHeapFirst" => new OnHeapFirstMemoryModeDecider(conf, memoryManager)
+        case "largeFirst" => new LargeFirstMemoryModeDecider(conf)
         case _ => new StaticMemoryModeDecider(conf)
       }
     } else {
@@ -794,23 +795,17 @@ private[spark] class BlockManager(
       classTag: ClassTag[T],
       tellMaster: Boolean = true,
       keepReadLock: Boolean = false): Boolean = {
-    val actualLevel = if (autoOffHeap) {
-      storageLevelMap.put(blockId, new OldNewStorageLevel(level, StorageLevel.OFF_HEAP))
-      StorageLevel.OFF_HEAP
-    } else {
-      level
-    }
     // info is generated in 'doPut()' method. It contains the actual storage level.
-    doPut(blockId, actualLevel,
+    doPut(blockId, level,
       classTag, tellMaster = tellMaster, keepReadLock = keepReadLock) { info =>
       val startTimeMs = System.currentTimeMillis
       // Since we're storing bytes, initiate the replication before storing them locally.
       // This is faster as data is already serialized and ready to send.
-      val replicationFuture = if (actualLevel.replication > 1) {
+      val replicationFuture = if (level.replication > 1) {
         Future {
           // This is a blocking action and should run in futureExecutionContext which is a cached
           // thread pool
-          replicate(blockId, bytes, actualLevel, classTag)
+          replicate(blockId, bytes, level, classTag)
         }(futureExecutionContext)
       } else {
         null
@@ -818,10 +813,10 @@ private[spark] class BlockManager(
 
       val size = bytes.size
 
-      if (actualLevel.useMemory) {
+      if (level.useMemory) {
         // Put it in memory first, even if it also has useDisk set to true;
         // We will drop it to disk later if the memory store can't hold it.
-        val putSucceeded = if (actualLevel.deserialized) {
+        val putSucceeded = if (level.deserialized) {
           val values =
             serializerManager.dataDeserializeStream(blockId, bytes.toInputStream())(classTag)
           memoryStore.putIteratorAsValues(blockId, values, classTag) match {
@@ -833,13 +828,13 @@ private[spark] class BlockManager(
               false
           }
         } else {
-          memoryStore.putBytes(blockId, size, actualLevel.memoryMode, () => bytes)
+          memoryStore.putBytes(blockId, size, level.memoryMode, () => bytes)
         }
-        if (!putSucceeded && actualLevel.useDisk) {
+        if (!putSucceeded && level.useDisk) {
           logWarning(s"Persisting block $blockId to disk instead.")
           diskStore.putBytes(blockId, bytes)
         }
-      } else if (actualLevel.useDisk) {
+      } else if (level.useDisk) {
         diskStore.putBytes(blockId, bytes)
       }
 
@@ -858,10 +853,10 @@ private[spark] class BlockManager(
       // Edit by Eddie
       logDebug("Using 'doPutBytes()'" +
         "Put block %s locally took %s".format(blockId, Utils.getUsedTimeMs(startTimeMs)))
-      if (actualLevel == StorageLevel.OFF_HEAP) {
+      if (level == StorageLevel.OFF_HEAP) {
         timeForPuttingDataOffHeap += Utils.getUsedTimeMs(startTimeMs)
       }
-      if (actualLevel.replication > 1) {
+      if (level.replication > 1) {
         // Wait for asynchronous replication to finish
         try {
           Await.ready(replicationFuture, Duration.Inf)
@@ -975,7 +970,7 @@ private[spark] class BlockManager(
       tellMaster: Boolean = true,
       keepReadLock: Boolean = false): Option[PartiallyUnrolledIterator[T]] = {
     val actualLevel = if (autoOffHeap) {
-      val newLevel = memoryModeDecider.levelToUse(level)
+      val newLevel = memoryModeDecider.levelToUse(level, iterator())
       if (!newLevel.equals(level)) {
         storageLevelMap.put(blockId, new OldNewStorageLevel(level, newLevel))
       }
