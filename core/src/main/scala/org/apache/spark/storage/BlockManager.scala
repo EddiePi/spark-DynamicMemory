@@ -854,7 +854,7 @@ private[spark] class BlockManager(
       logDebug("Using 'doPutBytes()'" +
         "Put block %s locally took %s".format(blockId, Utils.getUsedTimeMs(startTimeMs)))
       if (level == StorageLevel.OFF_HEAP) {
-        timeForPuttingDataOffHeap += Utils.getUsedTimeMs(startTimeMs)
+        timeForPuttingDataOffHeap += System.currentTimeMillis() - startTimeMs
       }
       if (level.replication > 1) {
         // Wait for asynchronous replication to finish
@@ -1043,7 +1043,7 @@ private[spark] class BlockManager(
         logDebug("Using 'doPutIterator()'" +
           "Put block %s locally took %s".format(blockId, Utils.getUsedTimeMs(startTimeMs)))
         if (actualLevel == StorageLevel.OFF_HEAP) {
-          timeForPuttingDataOffHeap += Utils.getUsedTimeMs(startTimeMs)
+          timeForPuttingDataOffHeap += System.currentTimeMillis() - startTimeMs
         }
 
         if (actualLevel.replication > 1) {
