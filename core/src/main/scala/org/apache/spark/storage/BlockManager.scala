@@ -167,6 +167,7 @@ private[spark] class BlockManager(
       val deciderType: String = conf.get("spark.memory.offHeap.autoOffHeap.decider", "static")
       deciderType match {
         case "static" => new StaticMemoryModeDecider(conf)
+        case "offHeapFirst" => new OnHeapFirstMemoryModeDecider(conf, memoryManager)
         case _ => new StaticMemoryModeDecider(conf)
       }
     } else {
