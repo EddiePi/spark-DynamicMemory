@@ -2,11 +2,12 @@
 package org.apache.spark.storage
 
 import org.apache.spark.SparkConf
+import org.apache.spark.internal.Logging
 import org.apache.spark.memory.MemoryManager
 import org.apache.spark.util.SizeEstimator
 
 
-private[storage] abstract class MemoryModeDecider () {
+private[storage] abstract class MemoryModeDecider () extends Logging {
   def levelToUse (originalLevel: StorageLevel, dataToStore: AnyRef): StorageLevel
 }
 
@@ -52,10 +53,14 @@ private[storage] class LargeFirstMemoryModeDecider (
 
   // number of megabytes
   var sizeThreshold: Double = conf.getLong("spark.memory.offHeap.autoOffHeap.sizeThreshold", 100)
-
   override def levelToUse(originalLevel: StorageLevel, dataToStore: AnyRef): StorageLevel = {
-    val dataSize = SizeEstimator.estimate(dataToStore)
-    if (dataSize / 1024 / 1024 > sizeThreshold) {
+
+    val timeStamp = System.currentTimeMillis()
+    val dataSize = SizeEstimator.estimate(dataToStore) / 1024/ 1024
+
+    logDebug("dataSize: %s MB. time for extimation: %s ms"
+      .format(dataSize, System.currentTimeMillis() - timeStamp))
+    if (dataSize > sizeThreshold) {
       return StorageLevel.OFF_HEAP
     } else {
       return originalLevel

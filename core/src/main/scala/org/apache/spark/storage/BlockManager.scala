@@ -969,6 +969,7 @@ private[spark] class BlockManager(
       classTag: ClassTag[T],
       tellMaster: Boolean = true,
       keepReadLock: Boolean = false): Option[PartiallyUnrolledIterator[T]] = {
+    // Edit by Eddie
     val actualLevel = if (autoOffHeap) {
       val newLevel = memoryModeDecider.levelToUse(level, iterator())
       if (!newLevel.equals(level)) {
